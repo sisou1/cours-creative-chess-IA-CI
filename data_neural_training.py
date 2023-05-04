@@ -3,7 +3,7 @@
 # Preparing data for neural network training
 import mysql.connector
 import chess.pgn
-from config import db_config
+from db_config import db_config
 
 # To connect to the database
 creativechessai_db = mysql.connector.connect(**db_config)
