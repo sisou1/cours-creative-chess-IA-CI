@@ -8,35 +8,33 @@ from db_config import db_config
 # To connect to the database
 creativechessai_db = mysql.connector.connect(**db_config)
 
-# Open the PGN file
+# Open th PGN file
 pgn = open('ChessDB/Databases.pgn')
 
-# Browse through the games in the PGN file one by one
+# Get ID of the last inserted game
+cursor = creativechessai_db.cursor()
+cursor.execute("SELECT MAX(id) FROM games")
+last_id = cursor.fetchone()[0]
+
+# Browse throught the games in the PGN file one by one
 while True:
     # Read a game
     game = chess.pgn.read_game(pgn)
     if game is None:
         break
-    # Initialize the board to the starting position of the game
-    board = game.board()
+    # Check if the game has already been inserted
+    if game.headers['Event'] is not None and game.headers['Event'] <= last_id:
+        continue
+    # Inser the game into database
+    cursor = creativechessai_db.cursor()
+    sql = "INSERT INTO games (event, site, date, round, white, black, result, moves) VALUES(%s,%s,%s,%s,%s,%s,%s,%s)"
+    val = (game.headers.get('Event'), game.headers.get('Site'), game.headers.get('Date'), game.headers.get('Round'),
+           game.headers.get('White'), game.headers.get('Black'), game.headers.get('Result'),
+           str(game.mainline_moves()))
+    cursor.execute(sql, val)
+    creativechessai_db.commit()
 
-    # Browse through the moves of the game
-    for move in game.mainline_moves():
-
-        # Check if the current position is an opening position
-        if board.is_valid() and board.ply() <= 10:
-            # Add the opening position to the database
-            position = board.fen()
-            cursor = creativechessai_db.cursor()
-            sql = "INSERT INTO openings (position) VALUES (%s)"
-            val = (position,)
-            cursor.execute(sql, val)
-            creativechessai_db.commit()
-
-        # Play the move on the board
-        board.push(move)
-
-# Close the files and the database connection
+# Close files and the database connection
 pgn.close()
 creativechessai_db.close()
-print("Le script est terminé.")
+print("The script is finished.")
