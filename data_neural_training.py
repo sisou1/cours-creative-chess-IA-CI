@@ -23,7 +23,7 @@ while True:
     if game is None:
         break
     # Check if the game has already been inserted
-    if game.headers['Event'] is not None and game.headers['Event'] <= last_id:
+    if game.headers.get('Event') is not None and int(game.headers.get('Event')) <= last_id:
         continue
     # Inser the game into database
     cursor = creativechessai_db.cursor()
