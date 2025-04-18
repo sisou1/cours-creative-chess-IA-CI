@@ -56,6 +56,10 @@ insert_query = "INSERT INTO games (event, site, date, round, white, black, resul
 # Initialize a list to store the data for each game
 games_data = []
 
+batch_size = 100  # ou une autre valeur selon ta convenance
+batch_count = 0
+
+
 # Iterate over the unique games
 for game in unique_games:
     # Check if the game already exists in the database
